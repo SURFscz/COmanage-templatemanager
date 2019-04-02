@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<!--
+  COmanage Registry Yoda Plugin Database Schema
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!--
+  While this schema mostly works with database prefixes, foreign key constraints
+  must be specified in raw SQL, which needs the prefixed table name.
+-->
+<schema version="0.3">
+  <table name="templatemanager">
+    <field name="id" type="I">
+      <key />
+      <autoincrement />
+    </field>
+    <field name="co_id" type="I">
+      <constraint>REFERENCES cm_co(id)</constraint>
+    </field>
+    <field name="parent_id" type="I" />
+    <field name="api_key" type="C" size="256" />
+    <field name="settings" type="X" size="4000" />
+    <field name="created" type="T" />
+    <field name="modified" type="T" />
+
+    <index name="co_templatemanager_i1">
+      <col>co_id</col>
+      <unique />
+    </index>
+  </table>
+</schema>
