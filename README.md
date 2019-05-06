@@ -113,7 +113,6 @@ Following the guidelines of the version 1 API, the JSON object looks as follows:
     "Version" : "1.0",
     "CoId": "<template CO id>",
     "Key": "<template CO api key>",
-    "Id": "<CO ID of the newly created CO>",
     "org_identity": <oid-enrollment object>,
     "invitation": <invite-enrollment object>,
     "signup": <signup-enrollment object>,
@@ -124,6 +123,8 @@ where:
 - the optional `org_identity` attribute contains an oid-enrollment object, with attributes, as defined below.
 - the optional `invitation` attribute contains an invitation enrollment specification with attributes, as defined below.
 - the optional `signup` attribute contains a signup enrollment specification, as defined below.
+
+Only one of `org_identity`, `invitation` or `signup` objects should be specified in the request. If more than one are given, there is a coded preference for `signup`, then `invitation` and finally `org_identity`.
 
 The oid-enrollment object is defined as follows:
 ```

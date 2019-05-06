@@ -259,18 +259,22 @@ class TemplateManagerController extends AppController {
           catch(Exception $e) {
             $dbc->rollback();
             $this->Api->restResultHeader(500, $e->getMessage());
+            $this->devLog("caught exception on main method: ".$e->getMessage());
           }
         } else {
           // only templates can be duplicated
           $this->Api->restResultHeader(403, "Forbidden");
+          $this->devLog("CO state incorrect");
         }
       } else {
         // unconfigured template
         $this->Api->restResultHeader(403, "Forbidden");
+        $this->devLog("no template configured");
       }
     } else {
       // redirect to the homepage for non-restful calls
       $this->redirect('/');
+      $this->devLog("not a restful request");
     }
   }
 
@@ -280,7 +284,6 @@ class TemplateManagerController extends AppController {
   }
   
   private function doInstantiate($data) {
-
     $newCoId = null;
     try {
       $newCoId = $this->TemplateManager->Co->duplicate($this->model['Co']['id']);
@@ -300,7 +303,6 @@ class TemplateManagerController extends AppController {
       // Perform post-configuration of the CO
       $this->configureCO($newModel, $data);
       $this->runScript($newCoId);
-
       // return the CO id
       $this->set("co_id",$newCoId);
       $this->Api->restResultHeader(201, "Added");
@@ -357,7 +359,7 @@ class TemplateManagerController extends AppController {
       // authorization is absent, or it is set to authorized users. 
       // (in which case we use, for example, SamlSource or EnvSource in
       // authenticate mode to read initial enrollment attributes)
-      if($data['signup']) {
+      if(isset($data['signup'])) {
         if(in_array($ef['CoEnrollmentFlow']['authz_level'], array(EnrollmentAuthzEnum::None, EnrollmentAuthzEnum::AuthUser))) {
           return $this->sendSelfSignupLink($data['signup'], $ef);
         } else {
@@ -664,12 +666,12 @@ class TemplateManagerController extends AppController {
   }
 
   private function runScript($id) {
-    if(isset($this->settings['run'])) {
+    if(isset($this->settings['run']) && strlen($this->settings['run'])) {
       $scriptName = basename($this->settings['run']);
       $root = Configure::read('templatemanager.script_root');
-      if(!empty($root) && is_dir($root)) {
+      if(!empty($scriptName) && !empty($root) && is_dir($root)) {
         $path = $root."/".$scriptName;
-        if(file_exists($path)) {
+        if(file_exists($path) && is_executable($path)) {
           $o="";
           $v=0;
           exec("$path $id", $o, $v);
@@ -706,5 +708,10 @@ class TemplateManagerController extends AppController {
     $this->TemplateManager->save($template);
 
     return $newModel;
+  }
+
+  private function devLog($msg)
+  {
+    //CakeLog::write('debug',$msg);
   }
 }
