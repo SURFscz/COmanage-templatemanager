@@ -301,10 +301,11 @@ class TemplateManagerController extends AppController {
 
     try {
       // Perform post-configuration of the CO
-      $this->configureCO($newModel, $data);
+      $key = $this->configureCO($newModel, $data);
       $this->runScript($newCoId);
       // return the CO id
       $this->set("co_id",$newCoId);
+      $this->set("api_key",$key);
       $this->Api->restResultHeader(201, "Added");
     }
     catch (Exception $e) {
@@ -700,14 +701,32 @@ class TemplateManagerController extends AppController {
     // but change the "actions" setting to only allow enroll
     $settings=$this->settings;
     $settings["actions"]=array("enroll");
+
     $template = $this->model['TemplateManager'];
     unset($template['id']);
     $template["settings"]=json_encode($settings);
     $template["parent_id"]=$template['co_id'];
     $template["co_id"]=$newModel["Co"]['id'];
+
+    // change the key to the supplied key, or create one ourselves
+    CakeLog::write('debug','api key in data is '.json_encode($data));
+    $template['api_key'] = isset($data['api_key']) ? $data['api_key'] : $this->generateKey();
+
+    CakeLog::write('debug','saving template '.json_encode($template));
     $this->TemplateManager->save($template);
 
-    return $newModel;
+    return $template["api_key"];
+  }
+
+  private function generateKey() {
+    // https://stackoverflow.com/questions/6101956/generating-a-random-password-in-php/31284266#31284266
+    $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $str = '';
+    $max = mb_strlen($keyspace, '8bit') - 1;
+    for ($i = 0; $i < 32; ++$i) {
+        $str .= $keyspace[random_int(0, $max)];
+    }
+    return $str;
   }
 
   private function devLog($msg)

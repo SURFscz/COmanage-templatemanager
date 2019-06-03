@@ -6,13 +6,12 @@
  */
 
 // Get a pointer to our model
-$modelid = "co_id";
-
-if(!empty($$modelid)) {
+if(!empty($co_id)) {
   print json_encode(array("ResponseType" => "NewObject",
                           "Version" => "1.0",
                           "ObjectType" => "Co",
-                          "Id" => $$modelid)) . "\n";
+                          "Id" => $co_id,
+                          "Key" => $api_key)) . "\n";
 } elseif(!empty($invalid_fields)) {
   print json_encode(array("ResponseType" => "ErrorResponse",
                           "Version" => "1.0",

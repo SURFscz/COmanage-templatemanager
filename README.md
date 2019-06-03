@@ -70,7 +70,8 @@ Following the guidelines of the version 1 API, the JSON object looks as follows:
     "CoId": "<template CO id>",
     "Key": "<template CO api key>",
     "Name": "<new name of the CO>",
-    "Description": "<optional description>"
+    "Description": "<optional description>",
+    "api_key": "<optional secret api key to use for instantiated CO>"
   }]
 }
 ```
@@ -79,6 +80,7 @@ where:
 - the `CoId` field should contain the CO template ID (required)
 - the `Name` field should contain a unique, non-existing CO name
 - the optional `Description` field contains the CO description. Otherwise the template description is copied.
+- the optional `api_key` field contains the new API key for the instantiated CO. If none is supplied, a random 32 character key is created
 
 This call reports the following status codes:
 - 403 Forbidden: for mismatch in API key or authentication, templates without configuration or COs for which the status is not `Template`.
@@ -91,10 +93,11 @@ On succes, a status message is reported in JSON format:
   "ResponseType":"NewObject",
   "Version":"1.0",
   "ObjectType":"Co",
-  "Id":"4"
+  "Id":"<new CO id>",
+  "Key": "<new CO API key>"
 }
 ```
-The `Id` mentioned in this message is the ID of the newly configured CO. This CO was duplicated using the standard COmanage duplication method. Then the name and description were adjusted with data as provided, status is set to Active and finally the specified script was run to configure processes out of scope of COmanage. The newly created CO has a TemplateManager configuration that is copied from the original template, including the API key. This means that anyone with access to the original template can use the same key to access to newly created CO. The new TemplateManager configuration has its actions restricted to `enroll` only. This ensures that the newly created CO cannot, in turn, be used as a template without intervention of a CO platform admin or CO admin, using the regular COmanage webinterface.
+The `Id` mentioned in this message is the ID of the newly configured CO. This CO was duplicated using the standard COmanage duplication method. Then the name and description were adjusted with data as provided, status is set to Active and finally the specified script was run to configure processes out of scope of COmanage. The newly created CO has a TemplateManager configuration that is copied from the original template, excluding the API key. The API key is either set to the value supplied with the instantiation call, or set to a random 32 character value. In either case, the new API key is reported back and should be used, in combination with the reported `Id`, for any subsequent enrollments. The new TemplateManager configuration has its actions restricted to `enroll` only. This ensures that the newly created CO cannot, in turn, be used as a template without intervention of a CO platform admin or CO admin, using the regular COmanage webinterface.
 
 Please note that the `instantiate` endpoint only works on COs with a status `Template`. Only CmpAdmins can set that status.
 
@@ -111,8 +114,8 @@ Following the guidelines of the version 1 API, the JSON object looks as follows:
   "Version" : "1.0",
   "TemplateManagers": [{
     "Version" : "1.0",
-    "CoId": "<template CO id>",
-    "Key": "<template CO api key>",
+    "CoId": "<CO id>",
+    "Key": "<CO api key>",
     "org_identity": <oid-enrollment object>,
     "invitation": <invite-enrollment object>,
     "signup": <signup-enrollment object>,
@@ -120,6 +123,8 @@ Following the guidelines of the version 1 API, the JSON object looks as follows:
 }
 ```
 where:
+- the `CoId` field contains the id of the newly created CO
+- the `Key` field contains the API key of the newly created CO, _not_ the one of the original template CO
 - the optional `org_identity` attribute contains an oid-enrollment object, with attributes, as defined below.
 - the optional `invitation` attribute contains an invitation enrollment specification with attributes, as defined below.
 - the optional `signup` attribute contains a signup enrollment specification, as defined below.
